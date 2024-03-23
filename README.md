@@ -1,5 +1,5 @@
 
-# Rust Configuration SDK
+# SDK for Config-Server-SSE
 
 This Rust-based SDK is designed to facilitate the integration with config-server-sse endpoints, focusing on enabling applications to receive real-time configuration updates. It's built with resilience in mind, featuring exponential backoff retry strategies and comprehensive error handling.
 

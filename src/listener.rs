@@ -9,13 +9,46 @@ use serde_json::from_slice;
 use slog::{info, warn};
 use tokio::time::{sleep, Duration};
 
+
+/// Starts listening for Server-Sent Events (SSE) from the specified URL and
+/// handles updates using the provided update handler function.
+///
+/// This function establishes an HTTP connection to the given `url` to listen for
+/// SSE. Upon receiving an event, it attempts to parse the event data as JSON into
+/// a `ServerConfig` and passes the result to `update_handler`. The connection
+/// attempts are made with exponential backoff based on the number of retries.
+///
+/// # Arguments
+///
+/// * `url` - A string slice that holds the URL of the SSE server to connect to.
+/// * `update_handler` - A function or closure that takes a `ServerConfig` and handles
+///   it. This handler is called each time a valid event is received and successfully
+///   parsed.
+/// * `max_retries` - The maximum number of connection attempts to make before giving up.
+///
+/// # Errors
+///
+/// Returns `Err(ConfigError)` if an error occurs while trying to establish a connection,
+/// if there is an issue with the incoming data stream, or if the maximum number of retries
+/// is reached without a successful connection.
+///
+/// # Examples
+///
+/// ```
+/// async fn update_config(config: ServerConfig) {
+///     // Handle the configuration update here
+/// }
+///
+/// let url = "http://example.com/config_stream";
+/// start_listening_for_updates(url, update_config, 5).await.unwrap();
+/// ```
 pub async fn start_listening_for_updates<F>(url: &str, mut update_handler: F, max_retries: u32) -> Result<(), ConfigError>
 where
     F: FnMut(ServerConfig) + Send + 'static,
 {
     let log = configure_logging();
     let client = Client::builder()
-        .user_agent("MyCustomClient/1.0")
+        .user_agent("RichieClient/1.0")
         .build()?;
     let mut attempt = 0;
     const BASE_DELAY: u64 = 2; // Base delay in seconds for the exponential backoff
